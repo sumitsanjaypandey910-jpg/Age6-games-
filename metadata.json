@@ -1,0 +1,6 @@
+{
+  "name": "Kids Learning Games",
+  "description": "Fun interactive learning and matching games for children aged 5 to 9 with ABC line matching, odd-one-out, and color sorting.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
