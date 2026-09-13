@@ -1,5 +1,5 @@
 import React from 'react';
-import { Volume2, VolumeX, Sparkles, RotateCcw, Trophy, Mic, MicOff, Music, Play, Pause } from 'lucide-react';
+import { Volume2, VolumeX, Sparkles, RotateCcw, Trophy, Mic, MicOff, Music, Play, Pause, Heart } from 'lucide-react';
 import { soundManager } from '../utils/audio';
 
 interface HeaderProps {
@@ -16,6 +16,7 @@ interface HeaderProps {
   currentMusicName: string;
   onToggleMusic: () => void;
   onOpenMusicSelector: () => void;
+  onUnlimitedInfo?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -32,6 +33,7 @@ export const Header: React.FC<HeaderProps> = ({
   currentMusicName,
   onToggleMusic,
   onOpenMusicSelector,
+  onUnlimitedInfo,
 }) => {
   return (
     <header
@@ -39,19 +41,30 @@ export const Header: React.FC<HeaderProps> = ({
       className="w-full max-w-5xl mx-auto px-3 py-2 sm:px-4 sm:py-3 flex flex-wrap items-center justify-between gap-2 select-none"
     >
       {/* Left badges - just like in the screenshot! */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
         {/* No Ads badge */}
         <div
           id="badge-no-ads"
-          className="bg-amber-300 text-red-600 font-extrabold px-3 py-1 rounded-full text-xs sm:text-sm tracking-wide shadow-md border-2 border-amber-400 uppercase transform -rotate-2"
+          className="bg-amber-300 text-red-600 font-extrabold px-2.5 sm:px-3 py-1 rounded-full text-xs sm:text-sm tracking-wide shadow-md border-2 border-amber-400 uppercase transform -rotate-2"
         >
           No Ads
         </div>
 
+        {/* Unlimited Lives & Levels badge */}
+        <button
+          id="badge-unlimited"
+          onClick={onUnlimitedInfo}
+          className="flex items-center gap-1.5 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white font-black px-2.5 py-1 rounded-full text-xs shadow-md border-2 border-rose-300 transition active:scale-95 cursor-pointer"
+          title="Unlimited Lives ❤️ & Unlimited Levels ✨: Play endlessly with zero pressure!"
+        >
+          <Heart className="w-3.5 h-3.5 text-white fill-white animate-pulse" />
+          <span className="tracking-wide">∞ Lives &amp; Levels</span>
+        </button>
+
         {/* Age selector pill */}
         <div
           id="badge-age-bracket"
-          className="relative inline-flex items-center bg-rose-600 text-white font-black text-xs sm:text-sm px-3 py-1 rounded-full shadow-md border-2 border-rose-400"
+          className="relative inline-flex items-center bg-rose-600 text-white font-black text-xs sm:text-sm px-2.5 sm:px-3 py-1 rounded-full shadow-md border-2 border-rose-400"
         >
           <span>Age:</span>
           <select

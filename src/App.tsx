@@ -13,6 +13,7 @@ import { ColorSortGame } from './components/ColorSortGame';
 import { StickerRewardsModal } from './components/StickerRewardsModal';
 import { MusicPlayerModal } from './components/MusicPlayerModal';
 import { MATCHING_LEVELS, ODD_ONE_OUT_LEVELS, SORTING_LEVELS } from './data/gameData';
+import { getMatchingLevel, getOddOneOutLevel, getSortingLevel } from './utils/levelGenerator';
 import { soundManager } from './utils/audio';
 import { bgmEngine, MusicTrack } from './utils/bgm';
 import { Sparkles, Trophy, ChevronLeft, ChevronRight, CheckCircle2, Music } from 'lucide-react';
@@ -141,6 +142,12 @@ export default function App() {
     triggerMascotReaction('cheering', `I love this host music: ${track.name}!`);
   };
 
+  const handleUnlimitedInfo = () => {
+    soundManager.playFanfare();
+    soundManager.speak('Unlimited Lives and Unlimited Levels are active! Play, learn, and explore endlessly with zero pressure!');
+    triggerMascotReaction('cheering', '❤️ Unlimited Lives & Levels! Play forever! ✨');
+  };
+
   // Restart current level
   const handleResetLevel = () => {
     soundManager.playPop();
@@ -148,9 +155,9 @@ export default function App() {
     triggerMascotReaction('talking', 'Let’s restart this activity!');
   };
 
-  const currentMatchingLevel = MATCHING_LEVELS[matchingLevelIdx] || MATCHING_LEVELS[0];
-  const currentOddLevel = ODD_ONE_OUT_LEVELS[oddLevelIdx] || ODD_ONE_OUT_LEVELS[0];
-  const currentSortLevel = SORTING_LEVELS[sortLevelIdx] || SORTING_LEVELS[0];
+  const currentMatchingLevel = getMatchingLevel(matchingLevelIdx);
+  const currentOddLevel = getOddOneOutLevel(oddLevelIdx);
+  const currentSortLevel = getSortingLevel(sortLevelIdx);
 
   return (
     <div
@@ -176,6 +183,7 @@ export default function App() {
         currentMusicName={bgmEngine.getCurrentTrack().name}
         onToggleMusic={handleToggleMusic}
         onOpenMusicSelector={() => setIsMusicModalOpen(true)}
+        onUnlimitedInfo={handleUnlimitedInfo}
       />
 
       {/* 2. Main Interactive Play Area (Inspired directly by Screenshot) */}
@@ -196,9 +204,14 @@ export default function App() {
 
             {/* Level Navigator for Current Game */}
             <div className="mt-3 bg-black/40 border border-amber-500/40 rounded-2xl p-2 flex flex-col items-center gap-1 w-full max-w-[170px]">
-              <span className="text-[11px] font-black text-amber-300 uppercase tracking-wide">
-                Activity Level
-              </span>
+              <div className="flex items-center gap-1">
+                <span className="text-[11px] font-black text-amber-300 uppercase tracking-wide">
+                  Activity Level
+                </span>
+                <span className="text-[9px] bg-emerald-500 text-white font-black px-1.5 py-0.2 rounded-full shadow-xs">
+                  Unlimited ✨
+                </span>
+              </div>
               <div className="flex items-center gap-2">
                 <button
                   id="btn-level-prev"
@@ -213,7 +226,7 @@ export default function App() {
                       setSortLevelIdx((i) => Math.max(0, i - 1));
                     }
                   }}
-                  className="p-1 rounded-full bg-amber-500 hover:bg-amber-400 text-white disabled:opacity-30 disabled:pointer-events-none transition"
+                  className="p-1 rounded-full bg-amber-500 hover:bg-amber-400 text-white disabled:opacity-30 disabled:pointer-events-none transition cursor-pointer"
                   disabled={
                     currentMode === 'matching'
                       ? matchingLevelIdx === 0
@@ -225,12 +238,8 @@ export default function App() {
                   <ChevronLeft className="w-4 h-4" />
                 </button>
 
-                <span className="text-sm font-black text-white px-2">
-                  {currentMode === 'matching'
-                    ? `${matchingLevelIdx + 1} / ${MATCHING_LEVELS.length}`
-                    : currentMode === 'odd_one_out'
-                    ? `${oddLevelIdx + 1} / ${ODD_ONE_OUT_LEVELS.length}`
-                    : `${sortLevelIdx + 1} / ${SORTING_LEVELS.length}`}
+                <span className="text-sm font-black text-white px-1 whitespace-nowrap">
+                  Level {currentMode === 'matching' ? matchingLevelIdx + 1 : currentMode === 'odd_one_out' ? oddLevelIdx + 1 : sortLevelIdx + 1}
                 </span>
 
                 <button
@@ -239,27 +248,15 @@ export default function App() {
                   onClick={() => {
                     soundManager.playPop();
                     if (currentMode === 'matching') {
-                      setMatchingLevelIdx((i) =>
-                        Math.min(MATCHING_LEVELS.length - 1, i + 1)
-                      );
+                      setMatchingLevelIdx((i) => i + 1);
                     } else if (currentMode === 'odd_one_out') {
-                      setOddLevelIdx((i) =>
-                        Math.min(ODD_ONE_OUT_LEVELS.length - 1, i + 1)
-                      );
+                      setOddLevelIdx((i) => i + 1);
                     } else {
-                      setSortLevelIdx((i) =>
-                        Math.min(SORTING_LEVELS.length - 1, i + 1)
-                      );
+                      setSortLevelIdx((i) => i + 1);
                     }
                   }}
-                  className="p-1 rounded-full bg-amber-500 hover:bg-amber-400 text-white disabled:opacity-30 disabled:pointer-events-none transition"
-                  disabled={
-                    currentMode === 'matching'
-                      ? matchingLevelIdx === MATCHING_LEVELS.length - 1
-                      : currentMode === 'odd_one_out'
-                      ? oddLevelIdx === ODD_ONE_OUT_LEVELS.length - 1
-                      : sortLevelIdx === SORTING_LEVELS.length - 1
-                  }
+                  className="p-1 rounded-full bg-amber-500 hover:bg-amber-400 text-white transition active:scale-95 cursor-pointer shadow-sm"
+                  title="Next Level (Unlimited)"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>
@@ -275,9 +272,9 @@ export default function App() {
                 level={currentMatchingLevel}
                 onLevelComplete={handleEarnStars}
                 onNextLevel={() => {
-                  setMatchingLevelIdx((i) => (i + 1) % MATCHING_LEVELS.length);
+                  setMatchingLevelIdx((i) => i + 1);
                 }}
-                hasMoreLevels={matchingLevelIdx < MATCHING_LEVELS.length - 1}
+                hasMoreLevels={true}
                 onMascotReact={triggerMascotReaction}
               />
             )}
@@ -288,9 +285,9 @@ export default function App() {
                 level={currentOddLevel}
                 onLevelComplete={handleEarnStars}
                 onNextLevel={() => {
-                  setOddLevelIdx((i) => (i + 1) % ODD_ONE_OUT_LEVELS.length);
+                  setOddLevelIdx((i) => i + 1);
                 }}
-                hasMoreLevels={oddLevelIdx < ODD_ONE_OUT_LEVELS.length - 1}
+                hasMoreLevels={true}
                 onMascotReact={triggerMascotReaction}
               />
             )}
@@ -301,9 +298,9 @@ export default function App() {
                 level={currentSortLevel}
                 onLevelComplete={handleEarnStars}
                 onNextLevel={() => {
-                  setSortLevelIdx((i) => (i + 1) % SORTING_LEVELS.length);
+                  setSortLevelIdx((i) => i + 1);
                 }}
-                hasMoreLevels={sortLevelIdx < SORTING_LEVELS.length - 1}
+                hasMoreLevels={true}
                 onMascotReact={triggerMascotReaction}
               />
             )}
@@ -456,6 +453,17 @@ export default function App() {
             >
               <Music className="w-4 h-4 text-amber-300" />
               <span>Host Music Samples 🎵</span>
+            </button>
+
+            {/* Card 7: Unlimited Lives & Levels */}
+            <button
+              id="btn-sidebar-unlimited"
+              onClick={handleUnlimitedInfo}
+              className="bg-rose-950/70 hover:bg-rose-900/90 border-2 border-rose-400/80 text-rose-200 p-2 rounded-2xl flex items-center justify-center gap-2 text-xs font-black transition active:scale-95 cursor-pointer shadow-sm"
+              title="Unlimited Lives ❤️ & Unlimited Levels ✨: Click to hear cheer!"
+            >
+              <span className="text-sm">❤️</span>
+              <span>Unlimited Lives &amp; Levels (∞)</span>
             </button>
           </div>
 
